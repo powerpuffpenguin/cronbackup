@@ -22,7 +22,7 @@ type Metadata struct {
 
 type Backend interface {
 	Backup(md Metadata) (e error)
-	Package(md Metadata) (e error)
+	Pack(md Metadata) (e error)
 	RemoveExpired(md Metadata) (e error)
 	Finish(md Metadata) (e error)
 }
@@ -31,7 +31,7 @@ type emptyBackend uint
 func (emptyBackend) Backup(md Metadata) (e error) {
 	return ErrNotImplemented
 }
-func (emptyBackend) Package(md Metadata) (e error) {
+func (emptyBackend) Pack(md Metadata) (e error) {
 	return ErrNotImplemented
 }
 func (emptyBackend) RemoveExpired(md Metadata) (e error) {

@@ -63,14 +63,35 @@ func (s *Status) Next() (result *Element, e error) {
 			if e != nil {
 				return e
 			}
-			if ele.Step > Finished {
+			if ele == nil {
+				// create new
+				e = s.setCurrentID(bucket, id)
+				if e != nil {
+					return e
+				}
+				ele := &Element{
+					ID:      id,
+					Step:    Init,
+					Created: time.Now(),
+				}
+				e = s.setElement(t, ele)
+				if e != nil {
+					return e
+				}
+				result = ele
+			} else if ele.Step > Finished {
 				return fmt.Errorf(`unknow step %v`, ele.Step)
 			} else if ele.Step < Finished {
 				result = ele
 			} else {
 				// create new
+				id++
+				e = s.setCurrentID(bucket, id)
+				if e != nil {
+					return e
+				}
 				ele := &Element{
-					ID:      id + 1,
+					ID:      id,
 					Step:    Init,
 					Created: time.Now(),
 				}
@@ -106,6 +127,9 @@ func (s *Status) getElement(t *bolt.Tx, id uint64) (*Element, error) {
 	binary.LittleEndian.PutUint64(key, id)
 	var ele Element
 	b := bucket.Get(key)
+	if len(b) == 0 {
+		return nil, nil
+	}
 	e := Unmarshal(b, &ele)
 	if e != nil {
 		return nil, e
@@ -141,6 +165,8 @@ func (s *Status) GenerateDescription(filename string) error {
 			ele, e := s.getElement(t, i)
 			if e != nil {
 				return e
+			} else if ele == nil {
+				continue
 			}
 			obj.Node = append(obj.Node, exportElement{
 				ID:       ele.ID,

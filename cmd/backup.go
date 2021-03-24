@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"log"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/powerpuffpenguin/cronbackup/core"
+	"github.com/powerpuffpenguin/cronbackup/core/backend"
 	"github.com/powerpuffpenguin/cronbackup/utils"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +15,7 @@ import (
 func init() {
 	var (
 		basePath = utils.BasePath()
-		backend, output,
+		backendFilename, output,
 		user, password, host string
 		port                   uint16
 		crontabs               []string
@@ -22,7 +25,20 @@ func init() {
 		Use:   `backup`,
 		Short: `crontab incremental backup`,
 		Run: func(cmd *cobra.Command, args []string) {
+			var (
+				bk backend.Backend
+				e  error
+			)
+			if strings.HasSuffix(backendFilename, `.js`) {
+				bk, e = backend.NewJSBackend(backendFilename)
+				if e != nil {
+					log.Fatalln(e)
+				}
+			} else {
+				log.Fatalln(`not supported backend :`, backendFilename)
+			}
 			c, e := core.New(
+				core.WithBackend(bk),
 				core.WithOutput(output),
 				core.WithServer(host, port), core.WithAuth(user, password),
 				core.WithImmediate(immediate), core.WithDescription(description),
@@ -39,7 +55,10 @@ func init() {
 			}
 			if len(c.Entries()) == 0 {
 				if immediate {
-					c.UnsafeJob()
+					e = c.UnsafeJob()
+					if e != nil {
+						os.Exit(1)
+					}
 				}
 			} else {
 				e = c.Serve()
@@ -50,7 +69,7 @@ func init() {
 		},
 	}
 	flags := cmd.Flags()
-	flags.StringVarP(&backend, `backend`, `b`,
+	flags.StringVarP(&backendFilename, `backend`, `b`,
 		utils.Abs(basePath, filepath.Join(`backend`, `mariadb.js`)),
 		`backend script`,
 	)

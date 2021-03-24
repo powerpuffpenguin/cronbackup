@@ -116,10 +116,10 @@ func (c *Core) Stop() (e error) {
 }
 
 // UnsafeJob .
-func (c *Core) UnsafeJob() {
-	c.runJob()
+func (c *Core) UnsafeJob() error {
+	return c.runJob()
 }
-func (c *Core) runJob() {
+func (c *Core) runJob() error {
 	log.Println(`runjob`)
 	var (
 		e      error
@@ -130,7 +130,7 @@ func (c *Core) runJob() {
 		ele, e = c.status.Next()
 		if e != nil {
 			log.Println(e)
-			return
+			return e
 		}
 		md := backend.Metadata{
 			ID:       ele.ID,
@@ -147,7 +147,7 @@ func (c *Core) runJob() {
 			e = c.opts.backend.Backup(md)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 			// set Backuped
 			ele.Step = status.Backuped
@@ -155,40 +155,40 @@ func (c *Core) runJob() {
 			e = c.status.Update(ele)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 		} else {
 			log.Printf("restore job %v on %v\n", ele.ID, ele.Step)
 		}
 
 		if ele.Step == status.Backuped {
-			// do package
-			e = c.opts.backend.Package(md)
+			// do pack
+			e = c.opts.backend.Pack(md)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
-			// set Packaged
-			ele.Step = status.Packaged
+			// set Packed
+			ele.Step = status.Packed
 			e = c.status.Update(ele)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 		}
-		if ele.Step == status.Packaged {
+		if ele.Step == status.Packed {
 			// do remove expired
 			e = c.opts.backend.RemoveExpired(md)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 			// set RemoveExpired
 			ele.Step = status.RemoveExpired
 			e = c.status.Update(ele)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 		}
 		if ele.Step == status.RemoveExpired {
@@ -196,14 +196,14 @@ func (c *Core) runJob() {
 			e = c.opts.backend.Finish(md)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 			// set Finished
 			ele.Step = status.Finished
 			e = c.status.Update(ele)
 			if e != nil {
 				log.Println(e)
-				return
+				return e
 			}
 		}
 	}
@@ -214,6 +214,7 @@ func (c *Core) runJob() {
 			log.Println(e)
 		}
 	}
+	return nil
 }
 func (c *Core) GenerateDescription() error {
 	return c.status.GenerateDescription(filepath.Join(c.opts.output, `description.json`))

@@ -11,7 +11,7 @@ type Step uint8
 const (
 	Init Step = iota
 	Backuped
-	Packaged
+	Packed
 	RemoveExpired
 	Finished
 )
@@ -22,8 +22,8 @@ func (s Step) String() string {
 		return `init`
 	case Backuped:
 		return `backuped`
-	case Packaged:
-		return `packaged`
+	case Packed:
+		return `packed`
 	case RemoveExpired:
 		return `remove expired`
 	case Finished:
