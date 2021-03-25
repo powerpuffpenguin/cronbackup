@@ -41,6 +41,8 @@ function backup(md) {
     console.log.apply(console, __spreadArrays([name], logs));
     os_1.exec.apply(void 0, __spreadArrays([name], args));
     if (mariadb_mysql_2.isNotChanged(os_1.join(output, 'xtrabackup_checkpoints'))) {
+        console.log('rm', output, '-rf');
+        os_1.exec('rm', output, '-rf');
         throw new Error(md.ID + " data not changed");
     }
 }

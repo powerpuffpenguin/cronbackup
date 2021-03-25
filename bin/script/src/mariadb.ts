@@ -30,6 +30,8 @@ export function backup(md: Metadata) {
     exec(name, ...args)
 
     if (isNotChanged(join(output, 'xtrabackup_checkpoints'))) {
+        console.log('rm', output, '-rf')
+        exec('rm', output, '-rf')
         throw new Error(`${md.ID} data not changed`);
     }
 }
