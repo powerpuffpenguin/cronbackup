@@ -7,7 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.finish = exports.removeExpired = exports.pack = exports.isNotChanged = void 0;
+exports.finish = exports.removeExpired = exports.pack = exports.backup = exports.isNotChanged = void 0;
 var os_1 = require("os");
 function isNotChanged(filename) {
     var str = os_1.readFile(filename);
@@ -47,6 +47,38 @@ function isNotChanged(filename) {
     return from_lsn === to_lsn && to_lsn === last_lsn;
 }
 exports.isNotChanged = isNotChanged;
+function backup(name, md) {
+    var output = os_1.join(md.Output, md.ID.toString());
+    console.log('rm', output, '-rf');
+    os_1.exec('rm', output, '-rf');
+    var args = [
+        "--user=" + md.Username,
+        "--password=" + md.Password,
+        '--backup',
+        "--host=" + md.Host,
+        "--port=" + md.Port,
+        "--target-dir=" + output,
+    ];
+    if (md.ID > 1) {
+        var incremental = os_1.join(md.Output, (md.ID - 1).toString());
+        args.push("--incremental-basedir=" + incremental);
+    }
+    var logs = new Array();
+    for (var i = 0; i < args.length; i++) {
+        if (args[i].startsWith("--user=") || args[i].startsWith("--password=")) {
+            continue;
+        }
+        logs.push(args[i]);
+    }
+    console.log.apply(console, __spreadArrays([name], logs));
+    os_1.exec.apply(void 0, __spreadArrays([name], args));
+    if (isNotChanged(os_1.join(output, 'xtrabackup_checkpoints'))) {
+        console.log('rm', output, '-rf');
+        os_1.exec('rm', output, '-rf');
+        throw new Error(md.ID + " data not changed");
+    }
+}
+exports.backup = backup;
 function pack(md) {
     var id = md.ID;
     var dir = os_1.join(md.Output, 'pack');

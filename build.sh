@@ -84,7 +84,7 @@ case $1 in
 			if [[ $GOARCH == 386 ]];then
 				dst=linux.386.tar.gz
 			fi
-			cd "$DirRoot/bin" && tar -zcvf $dst "$Target"
+			cd "$DirRoot/bin" && tar -zcvf $dst "$Target" backend
 		fi
 	;;
 
@@ -107,7 +107,7 @@ case $1 in
 			if [[ $GOARCH == 386 ]];then
 				dst=darwin.386.tar.gz
 			fi
-			cd "$DirRoot/bin" && tar -zcvf $dst "$Target"
+			cd "$DirRoot/bin" && tar -zcvf $dst "$Target" backend
 		fi
 	;;
 
@@ -124,13 +124,12 @@ case $1 in
 			cd "$DirRoot" && go build -ldflags "-s -w" -o "$DirRoot/bin/$Target.exe"
 		fi
 		check $?
-
 		if [[ $3 == tar || $3 == t ]]; then
 			dst=windows.amd64.tar.gz
 			if [[ $GOARCH == 386 ]];then
 				dst=windows.386.tar.gz
 			fi
-			cd "$DirRoot/bin" && tar -zcvf $dst "$Target.exe"
+			cd "$DirRoot/bin" && tar -zcvf $dst "$Target.exe" backend
 		fi
 	;;
 
