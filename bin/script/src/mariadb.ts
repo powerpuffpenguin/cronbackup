@@ -1,6 +1,6 @@
 import { exec, join } from "os";
 export { pack, removeExpired, finish } from "./mariadb-mysql";
-import { checkChanged } from "./mariadb-mysql";
+import { isNotChanged } from "./mariadb-mysql";
 export function backup(md: Metadata) {
     const output = join(md.Output, md.ID.toString())
     console.log('rm', output, '-rf')
@@ -29,8 +29,7 @@ export function backup(md: Metadata) {
     console.log(name, ...logs)
     exec(name, ...args)
 
-    if (!checkChanged(join(output, 'xtrabackup_checkpoints'))) {
+    if (isNotChanged(join(output, 'xtrabackup_checkpoints'))) {
         throw new Error(`${md.ID} data not changed`);
     }
-    throw new Error(`test ${md.ID} data not changed`);
 }

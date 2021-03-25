@@ -7,18 +7,46 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.finish = exports.removeExpired = exports.pack = exports.checkChanged = void 0;
+exports.finish = exports.removeExpired = exports.pack = exports.isNotChanged = void 0;
 var os_1 = require("os");
-function checkChanged(filename) {
+function isNotChanged(filename) {
     var str = os_1.readFile(filename);
     var strs = str.split("\n");
+    var keys = new Map();
     for (var i = 0; i < strs.length; i++) {
         var str_1 = strs[i].trim();
-        console.log(str_1);
+        var index = str_1.indexOf('=');
+        if (index < 0) {
+            continue;
+        }
+        var key = str_1.substring(0, index).trim();
+        if (keys.has(key)) {
+            continue;
+        }
+        if (key != 'from_lsn' && key != 'to_lsn' && key != 'last_lsn') {
+            continue;
+        }
+        var n = str_1.substring(index + 1).trim();
+        try {
+            var val = parseInt(n);
+            if (isNaN(val) || !isFinite(val) || val < 0) {
+                continue;
+            }
+            keys.set(key, val);
+        }
+        catch (e) {
+            console.log(e);
+        }
     }
-    return true;
+    if (keys.size != 3) {
+        throw new Error("analyze xtrabackup_checkpoints error");
+    }
+    var from_lsn = keys.get('from_lsn');
+    var to_lsn = keys.get('to_lsn');
+    var last_lsn = keys.get('last_lsn');
+    return from_lsn === to_lsn && to_lsn === last_lsn;
 }
-exports.checkChanged = checkChanged;
+exports.isNotChanged = isNotChanged;
 function pack(md) {
     var id = md.ID;
     var dir = os_1.join(md.Output, 'pack');
