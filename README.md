@@ -36,13 +36,13 @@ Flags:
 ## Perform a backup every night at 3 o'clock
 
 ```
-./cronbackup backup --host=127.0.0.1 --port=3306 --contab="* 3 * * *" -d
+./cronbackup backup --host=127.0.0.1 --port=3306 --contab="0 3 * * *" -d
 ```
 
 ## Execute immediately and Perform a backup every night at 3 o'clock
 
 ```
-./cronbackup backup --host=127.0.0.1 --port=3306 --contab="* 3 * * *" -i -d
+./cronbackup backup --host=127.0.0.1 --port=3306 --contab="0 3 * * *" -i -d
 ```
 
 # backend
