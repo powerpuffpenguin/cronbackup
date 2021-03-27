@@ -7,9 +7,10 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.finish = exports.removeExpired = exports.pack = exports.backup = exports.isNotChanged = void 0;
+exports.finish = exports.removeExpired = exports.pack = exports.backup = void 0;
 var os_1 = require("os");
-function isNotChanged(filename) {
+function loadLSN(filename) {
+    var _a, _b, _c;
     var str = os_1.readFile(filename);
     var strs = str.split("\n");
     var keys = new Map();
@@ -41,12 +42,12 @@ function isNotChanged(filename) {
     if (keys.size != 3) {
         throw new Error("analyze xtrabackup_checkpoints error");
     }
-    var from_lsn = keys.get('from_lsn');
-    var to_lsn = keys.get('to_lsn');
-    var last_lsn = keys.get('last_lsn');
-    return from_lsn === to_lsn && to_lsn === last_lsn;
+    return {
+        from: (_a = keys.get('from_lsn')) !== null && _a !== void 0 ? _a : 0,
+        to: (_b = keys.get('to_lsn')) !== null && _b !== void 0 ? _b : 0,
+        last: (_c = keys.get('last_lsn')) !== null && _c !== void 0 ? _c : 0,
+    };
 }
-exports.isNotChanged = isNotChanged;
 function backup(name, md) {
     var output = os_1.join(md.Output, md.ID.toString());
     console.log('rm', output, '-rf');
@@ -72,7 +73,8 @@ function backup(name, md) {
     }
     console.log.apply(console, __spreadArrays([name], logs));
     os_1.exec.apply(void 0, __spreadArrays([name], args));
-    if (isNotChanged(os_1.join(output, 'xtrabackup_checkpoints'))) {
+    var current = loadLSN(os_1.join(output, 'xtrabackup_checkpoints'));
+    if (current.from == current.to) {
         console.log('rm', output, '-rf');
         os_1.exec('rm', output, '-rf');
         throw new Error(md.ID + " data not changed");

@@ -1,5 +1,10 @@
 import { exec, cwdExec, join, readFile } from "os";
-export function isNotChanged(filename: string): boolean {
+interface LSN {
+    from: number
+    to: number
+    last: number
+}
+function loadLSN(filename: string): LSN {
     const str = readFile(filename)
     const strs = str.split("\n")
     const keys = new Map<string, number>()
@@ -30,10 +35,11 @@ export function isNotChanged(filename: string): boolean {
     if (keys.size != 3) {
         throw new Error("analyze xtrabackup_checkpoints error");
     }
-    const from_lsn = keys.get('from_lsn')
-    const to_lsn = keys.get('to_lsn')
-    const last_lsn = keys.get('last_lsn')
-    return from_lsn === to_lsn && to_lsn === last_lsn
+    return {
+        from: keys.get('from_lsn') ?? 0,
+        to: keys.get('to_lsn') ?? 0,
+        last: keys.get('last_lsn') ?? 0,
+    }
 }
 export function backup(name: string, md: Metadata) {
     const output = join(md.Output, md.ID.toString())
@@ -62,7 +68,8 @@ export function backup(name: string, md: Metadata) {
     console.log(name, ...logs)
     exec(name, ...args)
 
-    if (isNotChanged(join(output, 'xtrabackup_checkpoints'))) {
+    const current = loadLSN(join(output, 'xtrabackup_checkpoints'))
+    if (current.from == current.to) {
         console.log('rm', output, '-rf')
         exec('rm', output, '-rf')
         throw new Error(`${md.ID} data not changed`);

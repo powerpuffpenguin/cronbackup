@@ -84,7 +84,7 @@ case $1 in
 			if [[ $GOARCH == 386 ]];then
 				dst=linux.386.tar.gz
 			fi
-			cd "$DirRoot/bin" && tar -zcvf $dst "$Target" backend
+			cd "$DirRoot/bin" && tar -zcvf $dst "$Target" backend script
 		fi
 	;;
 
@@ -107,7 +107,7 @@ case $1 in
 			if [[ $GOARCH == 386 ]];then
 				dst=darwin.386.tar.gz
 			fi
-			cd "$DirRoot/bin" && tar -zcvf $dst "$Target" backend
+			cd "$DirRoot/bin" && tar -zcvf $dst "$Target" backend script
 		fi
 	;;
 
@@ -129,7 +129,7 @@ case $1 in
 			if [[ $GOARCH == 386 ]];then
 				dst=windows.386.tar.gz
 			fi
-			cd "$DirRoot/bin" && tar -zcvf $dst "$Target.exe" backend
+			cd "$DirRoot/bin" && tar -zcvf $dst "$Target.exe" backend script
 		fi
 	;;
 
