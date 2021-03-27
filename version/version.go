@@ -1,8 +1,8 @@
 package version
 
 // Tag git tag
-const Tag = `v1.0.0`
+const Tag = `v1.0.0-3-g33b5ea9`
 // Commit git commit
-const Commit = `08a3c00b682fc88422fba0ff7ebc1e8906940f84`
+const Commit = `33b5ea9c3dbe58f748d5dd004a1bcc9bedcf7fb8`
 // Date build datetime
-const Date = `2021-03-25 11:18:55`
+const Date = `2021-03-27 09:24:29`
